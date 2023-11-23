@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Screen for Cr0me</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        #container {
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        button {
+            font-size: 18px;
+            padding: 12px 20px;
+            margin: 10px;
+            cursor: pointer;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        video {
+            width: 100%;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        footer {
+            margin-top: 20px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>Speed Screen for Cr0me</h1>
+        <button id="startBtn">Iniciar Gravação</button>
+        <button id="stopBtn" disabled>Parar Gravação</button>
+        <video id="recordedVideo" controls></video>
+    </div>
+
+    <footer>
+        <p>Desenvolvido por HazZo4-0ff &copy; <span id="currentYear"></span> - Todos os direitos reservados</p>
+    </footer>
+
+    <script>
+        let mediaRecorder;
+        let recordedChunks = [];
+
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const recordedVideo = document.getElementById('recordedVideo');
+
+        startBtn.addEventListener('click', startRecording);
+        stopBtn.addEventListener('click', stopRecording);
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+
+                mediaRecorder = new MediaRecorder(stream);
+
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                    recordedVideo.src = URL.createObjectURL(blob);
+                    recordedVideo.controls = true;
+                };
+
+                mediaRecorder.start();
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+            } catch (error) {
+                console.error('Erro ao acessar a tela ou áudio:', error);
+            }
+        }
+
+        function stopRecording() {
+            mediaRecorder.stop();
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+        }
+
+        // Obtém o ano atual para exibir no rodapé
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>
